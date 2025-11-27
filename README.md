@@ -9,6 +9,7 @@ A declarative layout engine for PHP that uses ASCII box-drawing syntax to visual
 - **Layout Inheritance**: Extend layouts with the `extends` keyword
 - **Nested Grids**: Support for nested grid structures within slots
 - **Custom Components**: Register your own components for dynamic content rendering
+- **PSR-16 Caching**: Pluggable caching with any PSR-16 implementation, filesystem cache included
 - **Type Safety**: Built with PHP 8.4, strict types, and PHPStan max level
 
 ## Requirements
@@ -207,6 +208,62 @@ $components->register('card', new CardComponent());
 // [mySlot]
 //   component: card
 //   background: #f0f0f0
+```
+
+## Caching
+
+For improved performance, use `CachedLayoutResolver` to cache resolved layouts. It supports any PSR-16 (Simple Cache) implementation and includes a built-in filesystem cache.
+
+### Basic Usage
+
+```php
+use PhpLayout\Parser\LayoutParser;
+use PhpLayout\Resolver\CachedLayoutResolver;
+use PhpLayout\Cache\FilesystemCache;
+
+$source = file_get_contents('layouts/page.lyt');
+
+$parser = new LayoutParser();
+$layouts = $parser->parse($source);
+
+// Create a filesystem cache
+$cache = new FilesystemCache('/path/to/cache');
+
+// Create cached resolver (cache key is derived from source content hash)
+$resolver = new CachedLayoutResolver($layouts, $cache, $source);
+
+// First call resolves and caches, subsequent calls return cached result
+$resolved = $resolver->resolve('page');
+```
+
+### With TTL
+
+```php
+// Cache expires after 1 hour (3600 seconds)
+$resolver = new CachedLayoutResolver($layouts, $cache, $source, ttl: 3600);
+```
+
+### Using Other PSR-16 Caches
+
+Any PSR-16 compliant cache works:
+
+```php
+use Symfony\Component\Cache\Psr16Cache;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+
+// Example with Symfony Cache + Redis
+$redis = RedisAdapter::createConnection('redis://localhost');
+$cache = new Psr16Cache(new RedisAdapter($redis));
+
+$resolver = new CachedLayoutResolver($layouts, $cache, $source);
+```
+
+### Cache Invalidation
+
+Cache keys include a hash of the source content, so changes to layout files automatically invalidate the cache. For manual invalidation:
+
+```php
+$resolver->clearCache();
 ```
 
 ## Development
