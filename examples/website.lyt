@@ -1,0 +1,93 @@
+@layout base {
+  +----------------------------------------------+
+  |                    head                      |
+  +----------------------------------------------+
+  |                                              |
+  |     +------------------------------+         |
+  |     |            body              |         |
+  |     +------------------------------+         |
+  |                                              |
+  +----------------------------------------------+
+  |                    foot                      |
+  +----------------------------------------------+
+
+  [head]
+    height: 70px
+
+  [body]
+    width: 800px
+
+  [foot]
+    height: 50px
+}
+
+@layout page extends base {
+  [head] {
+    +----------+------------------+---------+
+    |  logo    |       nav        |  auth   |
+    +----------+------------------+---------+
+  }
+
+  [body] {
+    +----------+-----------------------+
+    | sidebar  |        content        |
+    +----------+-----------------------+
+  }
+
+  [foot] {
+    +--------------+--------------------+
+    |  footer_nav  |     copyright      |
+    +--------------+--------------------+
+  }
+
+  [logo]
+    component: Logo
+    width: 120px
+
+  [nav]
+    component: MainNav
+
+  [auth]
+    component: AuthButtons
+    width: 150px
+
+  [sidebar]
+    component: Sidebar
+    width: 220px
+
+  [content]
+    ...
+
+  [footer_nav]
+    component: FooterNav
+
+  [copyright]
+    component: Copyright
+}
+
+@layout article extends page {
+  [content] {
+    +-------------------------------+
+    |        breadcrumbs            |
+    +-------------------------------+
+    |        article_head           |
+    +-------------------------------+
+    |        article_body           |
+    +-------------------------------+
+    |        comments               |
+    +-------------------------------+
+  }
+
+  [breadcrumbs]
+    height: 40px
+    component: Breadcrumbs
+
+  [article_head]
+    component: ArticleHeader
+
+  [article_body]
+    component: ArticleBody
+
+  [comments]
+    component: Comments
+}
