@@ -1,5 +1,5 @@
 {
-    "name": "php-layout/php-layout",
+    "name": "nsrosenqvist/php-layout",
     "description": "A declarative HTML layout engine using ASCII box-drawing syntax",
     "type": "library",
     "license": "MIT",
@@ -26,10 +26,11 @@
         "test:unit": "phpunit --testsuite=unit",
         "test:e2e": "phpunit --testsuite=e2e",
         "test:coverage": "phpunit --coverage-html=coverage",
-        "analyse": "phpstan analyse",
-        "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.php",
-        "cs-check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff",
-        "qa": ["@cs-fix", "@analyse", "@test"],
+        "analyze": "phpstan analyze",
+        "analyse": "@analyze",
+        "format": "php-cs-fixer fix --config=.php-cs-fixer.php",
+        "format:check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff",
+        "check": ["@cs-fix", "@analyse", "@test"],
         "preview": ["@test:e2e", "@php -S localhost:8080 -t output"]
     },
     "config": {
