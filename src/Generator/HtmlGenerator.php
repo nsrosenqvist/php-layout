@@ -46,9 +46,13 @@ final class HtmlGenerator
         array $slots,
         ComponentRegistry $components,
         string $containerClass,
+        bool $includeWrapper = true,
     ): string {
         $lines = [];
-        $lines[] = '<div class="' . $this->escape($containerClass) . '">';
+
+        if ($includeWrapper) {
+            $lines[] = '<div class="' . $this->escape($containerClass) . '">';
+        }
 
         // Get unique slot names from grid
         $slotNames = $grid->getSlotNames();
@@ -67,6 +71,7 @@ final class HtmlGenerator
                         $slot->children,
                         $components,
                         $elementClass,
+                        false, // Don't include wrapper, parent already created it
                     );
                     $lines[] = $this->indent($nestedHtml, 4);
                 } elseif ($slot->hasComponent()) {
@@ -94,7 +99,9 @@ final class HtmlGenerator
             $lines[] = '  </div>';
         }
 
-        $lines[] = '</div>';
+        if ($includeWrapper) {
+            $lines[] = '</div>';
+        }
 
         return implode("\n", $lines);
     }

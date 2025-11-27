@@ -341,6 +341,12 @@ HTML;
             }
         }
 
+        // Auto-center elements with max-width if no margin is explicitly set
+        if (isset($properties['max-width']) && !isset($properties['margin'])) {
+            $cssProps[] = 'margin-left: auto';
+            $cssProps[] = 'margin-right: auto';
+        }
+
         // Handle alignment
         if (isset($properties['align']) || isset($properties['justify'])) {
             $cssProps[] = 'display: flex';
