@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class LexerTest extends TestCase
 {
     #[Test]
-    public function it_tokenizes_empty_input(): void
+    public function itTokenizesEmptyInput(): void
     {
         $lexer = new Lexer('');
         $tokens = $lexer->tokenize();
@@ -22,7 +22,7 @@ final class LexerTest extends TestCase
     }
 
     #[Test]
-    public function it_tokenizes_layout_declaration(): void
+    public function itTokenizesLayoutDeclaration(): void
     {
         $lexer = new Lexer('@layout base {');
         $tokens = $lexer->tokenize();
@@ -35,7 +35,7 @@ final class LexerTest extends TestCase
     }
 
     #[Test]
-    public function it_tokenizes_extends(): void
+    public function itTokenizesExtends(): void
     {
         $lexer = new Lexer('@layout page extends base {');
         $tokens = $lexer->tokenize();
@@ -49,7 +49,7 @@ final class LexerTest extends TestCase
     }
 
     #[Test]
-    public function it_tokenizes_slot_reference(): void
+    public function itTokenizesSlotReference(): void
     {
         $lexer = new Lexer('[header]');
         $tokens = $lexer->tokenize();
@@ -59,7 +59,7 @@ final class LexerTest extends TestCase
     }
 
     #[Test]
-    public function it_tokenizes_grid_lines(): void
+    public function itTokenizesGridLines(): void
     {
         $input = <<<'GRID'
 +----------+-----------+
@@ -75,7 +75,7 @@ GRID;
     }
 
     #[Test]
-    public function it_tokenizes_properties(): void
+    public function itTokenizesProperties(): void
     {
         $input = <<<'PROPS'
 component: Logo
@@ -94,7 +94,7 @@ PROPS;
     }
 
     #[Test]
-    public function it_tokenizes_container_marker(): void
+    public function itTokenizesContainerMarker(): void
     {
         $lexer = new Lexer('...');
         $tokens = $lexer->tokenize();
@@ -104,7 +104,7 @@ PROPS;
     }
 
     #[Test]
-    public function it_skips_comments(): void
+    public function itSkipsComments(): void
     {
         $input = <<<'INPUT'
 @layout base {
@@ -124,7 +124,7 @@ INPUT;
     }
 
     #[Test]
-    public function it_tokenizes_complete_layout(): void
+    public function itTokenizesCompleteLayout(): void
     {
         $input = <<<'LAYOUT'
 @layout page extends base {

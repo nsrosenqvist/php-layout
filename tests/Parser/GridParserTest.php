@@ -18,7 +18,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_empty_input(): void
+    public function itParsesEmptyInput(): void
     {
         $grid = $this->parser->parse([]);
 
@@ -26,7 +26,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_single_cell_grid(): void
+    public function itParsesSingleCellGrid(): void
     {
         $lines = [
             '+----------+',
@@ -43,7 +43,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_multiple_columns(): void
+    public function itParsesMultipleColumns(): void
     {
         $lines = [
             '+----------+------------------+---------+',
@@ -61,7 +61,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_multiple_rows(): void
+    public function itParsesMultipleRows(): void
     {
         $lines = [
             '+----------+-----------+',
@@ -83,7 +83,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_extracts_slot_names(): void
+    public function itExtractsSlotNames(): void
     {
         $lines = [
             '+----------+-----------+',
@@ -102,7 +102,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_handles_spanning_cells(): void
+    public function itHandlesSpanningCells(): void
     {
         $lines = [
             '+----------+-----------+',
@@ -121,7 +121,7 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
-    public function it_ignores_empty_lines(): void
+    public function itIgnoresEmptyLines(): void
     {
         $lines = [
             '',

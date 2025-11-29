@@ -75,23 +75,33 @@ final class HtmlGenerator
                     );
                     $lines[] = $this->indent($nestedHtml, 4);
                 } elseif ($slot->hasComponent()) {
+                    // Explicit component set via "component:" property
                     $componentName = $slot->getComponent();
                     \assert($componentName !== null);
-                    $content = $components->render($componentName, $slot->properties);
+                    $content = $components->render($componentName, $slot->properties, '', $name);
                     $lines[] = '    ' . $content;
                 } elseif ($slot->isContainer) {
                     $lines[] = '    <!-- slot: ' . $name . ' -->';
-                } else {
-                    // Try to render by slot name
-                    if ($components->has($name)) {
-                        $content = $components->render($name, $slot->properties);
-                        $lines[] = '    ' . $content;
-                    }
+                } elseif ($components->has($name)) {
+                    // Content registered for this slot name
+                    $content = $components->render($name, $slot->properties, '', $name);
+                    $lines[] = '    ' . $content;
+                } elseif ($components->hasDefaultComponent()) {
+                    // Use default component if set
+                    $defaultComponent = $components->getDefaultComponent();
+                    \assert($defaultComponent !== null);
+                    $content = $components->render($defaultComponent, $slot->properties, '', $name);
+                    $lines[] = '    ' . $content;
                 }
             } else {
-                // No slot definition, try component by name
+                // No slot definition, try content by name or default component
                 if ($components->has($name)) {
-                    $content = $components->render($name);
+                    $content = $components->render($name, [], '', $name);
+                    $lines[] = '    ' . $content;
+                } elseif ($components->hasDefaultComponent()) {
+                    $defaultComponent = $components->getDefaultComponent();
+                    \assert($defaultComponent !== null);
+                    $content = $components->render($defaultComponent, [], '', $name);
                     $lines[] = '    ' . $content;
                 }
             }

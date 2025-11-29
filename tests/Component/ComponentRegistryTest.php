@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 final class ComponentRegistryTest extends TestCase
 {
     #[Test]
-    public function it_registers_and_renders_component(): void
+    public function itRegistersAndRendersComponent(): void
     {
         $registry = new ComponentRegistry();
         $registry->register('box', new BoxComponent());
@@ -26,7 +26,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_and_renders_static_content(): void
+    public function itRegistersAndRendersStaticContent(): void
     {
         $registry = new ComponentRegistry();
         $registry->setContent('header', '<header>Hello</header>');
@@ -38,7 +38,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_placeholder_for_unknown_component(): void
+    public function itReturnsPlaceholderForUnknownComponent(): void
     {
         $registry = new ComponentRegistry();
 
@@ -48,7 +48,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_supports_fluent_interface(): void
+    public function itSupportsFluentInterface(): void
     {
         $registry = new ComponentRegistry();
 
@@ -64,7 +64,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_lists_registered_names(): void
+    public function itListsRegisteredNames(): void
     {
         $registry = new ComponentRegistry();
         $registry
@@ -78,7 +78,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_registers_custom_component(): void
+    public function itRegistersCustomComponent(): void
     {
         $customComponent = new class () implements ComponentInterface {
             public function render(array $properties, string $content = ''): string
@@ -97,7 +97,7 @@ final class ComponentRegistryTest extends TestCase
     }
 
     #[Test]
-    public function it_escapes_unknown_component_names(): void
+    public function itEscapesUnknownComponentNames(): void
     {
         $registry = new ComponentRegistry();
 
@@ -105,5 +105,44 @@ final class ComponentRegistryTest extends TestCase
 
         self::assertStringNotContainsString('<script>', $html);
         self::assertStringContainsString('&lt;script&gt;', $html);
+    }
+
+    #[Test]
+    public function itSetsDefaultComponent(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register('box', new BoxComponent());
+
+        self::assertFalse($registry->hasDefaultComponent());
+        self::assertNull($registry->getDefaultComponent());
+
+        $registry->setDefaultComponent('box');
+
+        self::assertTrue($registry->hasDefaultComponent());
+        self::assertSame('box', $registry->getDefaultComponent());
+    }
+
+    #[Test]
+    public function itThrowsWhenSettingUnregisteredDefault(): void
+    {
+        $registry = new ComponentRegistry();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Cannot set default component 'unknown': component not registered.");
+
+        $registry->setDefaultComponent('unknown');
+    }
+
+    #[Test]
+    public function itSupportsFluentInterfaceWithDefault(): void
+    {
+        $registry = new ComponentRegistry();
+
+        $result = $registry
+            ->register('box', new BoxComponent())
+            ->setDefaultComponent('box');
+
+        self::assertSame($registry, $result);
+        self::assertSame('box', $registry->getDefaultComponent());
     }
 }

@@ -22,7 +22,7 @@ final class CssGeneratorTest extends TestCase
     }
 
     #[Test]
-    public function it_generates_simple_grid_css(): void
+    public function itGeneratesSimpleGridCss(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -48,7 +48,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_multi_column_grid(): void
+    public function itGeneratesMultiColumnGrid(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -57,7 +57,7 @@ LAYOUT;
   +----------+-----------+
 
   [sidebar]
-    width: 200px
+    grid-width: 200px
 
   [content]
     component: Content
@@ -75,7 +75,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_multi_row_grid(): void
+    public function itGeneratesMultiRowGrid(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -88,13 +88,13 @@ LAYOUT;
   +----------+
 
   [header]
-    height: 80px
+    grid-height: 80px
 
   [content]
     component: Content
 
   [footer]
-    height: 50px
+    grid-height: 50px
 }
 LAYOUT;
 
@@ -111,7 +111,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_spanning_cells(): void
+    public function itGeneratesSpanningCells(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -122,10 +122,10 @@ LAYOUT;
   +----------+-----------+
 
   [header]
-    height: 80px
+    grid-height: 80px
 
   [sidebar]
-    width: 200px
+    grid-width: 200px
 
   [content]
     component: Content
@@ -143,7 +143,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_uses_custom_container_class(): void
+    public function itUsesCustomContainerClass(): void
     {
         $input = <<<'LAYOUT'
 @layout base {

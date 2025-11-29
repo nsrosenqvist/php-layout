@@ -39,20 +39,23 @@ Create a `.lyt` file with your layout definition:
   +------------------------------------------+
 
   [header]
-    height: 70px
+    component: box
+    grid-height: 70px
     background: #2563eb
     padding: 0 20px
 
   [sidebar]
-    width: 250px
+    component: box
+    grid-width: 250px
     background: #f1f5f9
     padding: 20px
 
   [content]
-    padding: 30px
+    component: ...
 
   [footer]
-    height: 60px
+    component: box
+    grid-height: 60px
     background: #1e293b
 }
 ```
@@ -62,19 +65,14 @@ Create a `.lyt` file with your layout definition:
 ```php
 <?php
 
-use PhpLayout\Parser\LayoutParser;
-use PhpLayout\Resolver\LayoutResolver;
+use PhpLayout\Loader\LayoutLoader;
 use PhpLayout\Generator\CssGenerator;
 use PhpLayout\Generator\HtmlGenerator;
 use PhpLayout\Component\ComponentRegistry;
 
-// Parse layout
-$parser = new LayoutParser();
-$layouts = $parser->parse($layoutString);
-
-// Resolve inheritance
-$resolver = new LayoutResolver($layouts);
-$resolved = $resolver->resolve('page');
+// Load and resolve layout from file
+$loader = new LayoutLoader();
+$resolved = $loader->load('layouts/page.lyt', 'page');
 
 // Generate CSS
 $cssGenerator = new CssGenerator();
@@ -152,19 +150,39 @@ Define properties for each slot in `[slotName]` blocks:
 
 ```
 [header]
-  height: 60px
+  component: box
+  grid-height: 60px
   background: #333
   padding: 0 20px
-  align: center
-  justify: space-between
 ```
 
-Supported properties:
+#### The `component` Property
+
+The `component:` property specifies which registered component renders the slot:
+
+- `component: box` - Use the component registered as "box"
+- `component: ...` - Mark as a container/placeholder slot (no component renders)
+- *(omitted)* - Slot has no component unless a default is set
+
+#### Grid Layout Properties
+
+These properties are used by the layout engine to define the CSS Grid structure:
+
+- `grid-width` - Defines column size in `grid-template-columns` (defaults to `1fr`)
+- `grid-height` - Defines row size in `grid-template-rows` (defaults to `auto`)
+
+#### Component Properties
+
+All other properties are passed to the component specified by `component:`. Each component defines its own supported properties.
+
+The built-in `BoxComponent` supports:
 - `width`, `height`, `min-width`, `max-width`, `min-height`, `max-height`
 - `padding`, `margin`
 - `background`, `border`, `border-radius`
 - `align` (maps to `align-items`)
 - `justify` (maps to `justify-content`)
+
+Custom components can define and require their own properties.
 
 ### Layout Inheritance
 
@@ -179,7 +197,18 @@ Extend existing layouts and fill their slots:
   }
 
   [card1]
+    component: card
     background: #dbeafe
+    padding: 20px
+
+  [card2]
+    component: card
+    background: #dcfce7
+    padding: 20px
+
+  [card3]
+    component: card
+    background: #fef3c7
     padding: 20px
 }
 ```
@@ -204,43 +233,122 @@ class CardComponent implements ComponentInterface
 $components = new ComponentRegistry();
 $components->register('card', new CardComponent());
 
-// Use in layout definition with component: property
+// Use in layout definition with explicit component: property
 // [mySlot]
 //   component: card
 //   background: #f0f0f0
 ```
 
+### Default Component
+
+You can set a default component to use when a slot has no explicit `component:` property:
+
+```php
+use PhpLayout\Component\BoxComponent;
+use PhpLayout\Component\ComponentRegistry;
+
+$components = new ComponentRegistry();
+$components
+    ->register('box', new BoxComponent())
+    ->setDefaultComponent('box');
+
+// Now slots without "component:" will render using BoxComponent
+```
+
+### Render Context
+
+For components that need access to page-level data (like a header displaying the page title), implement `ContextAwareComponentInterface`:
+
+```php
+use PhpLayout\Component\ContextAwareComponentInterface;
+use PhpLayout\Render\RenderContext;
+
+// Define a typed data model for your pages
+class PageData
+{
+    public function __construct(
+        public readonly string $title,
+        public readonly string $author,
+        public readonly \DateTimeImmutable $publishedAt,
+    ) {}
+}
+
+// Create a context-aware component
+class HeaderComponent implements ContextAwareComponentInterface
+{
+    // Fallback for non-context rendering
+    public function render(array $properties, string $content = ''): string
+    {
+        return '<header>Default Header</header>';
+    }
+
+    // Called when context is available
+    public function renderWithContext(RenderContext $context, string $content = ''): string
+    {
+        $data = $context->getData();
+        $title = $data instanceof PageData ? $data->title : 'Untitled';
+        $bg = $context->getProperty('background', '#333');
+
+        return "<header style=\"background: {$bg}\"><h1>{$title}</h1></header>";
+    }
+}
+```
+
+Pass context when rendering:
+
+```php
+$components = new ComponentRegistry();
+$components
+    ->register('header', new HeaderComponent())
+    ->setContext(new PageData(
+        title: 'My Article',
+        author: 'Jane Doe',
+        publishedAt: new \DateTimeImmutable(),
+    ));
+
+$html = $htmlGenerator->generate($resolved, $components, 'layout');
+// Header will display "My Article" as the title
+```
+
+The `RenderContext` provides:
+- `getData()` - The typed data model you passed via `setContext()`
+- `getProperties()` - Slot properties from the layout definition
+- `getProperty(string $key, string $default)` - Get a single property
+- `getSlotName()` - The name of the slot being rendered
+
 ## Caching
 
-For improved performance, use `CachedLayoutResolver` to cache resolved layouts. It supports any PSR-16 (Simple Cache) implementation and includes a built-in filesystem cache.
+The `LayoutLoader` supports PSR-16 caching for improved performance. File-based loading uses modification time for fast cache invalidation.
 
 ### Basic Usage
 
 ```php
-use PhpLayout\Parser\LayoutParser;
-use PhpLayout\Resolver\CachedLayoutResolver;
+use PhpLayout\Loader\LayoutLoader;
 use PhpLayout\Cache\FilesystemCache;
 
-$source = file_get_contents('layouts/page.lyt');
-
-$parser = new LayoutParser();
-$layouts = $parser->parse($source);
-
-// Create a filesystem cache
+// Create loader with filesystem cache
 $cache = new FilesystemCache('/path/to/cache');
+$loader = new LayoutLoader(cache: $cache);
 
-// Create cached resolver (cache key is derived from source content hash)
-$resolver = new CachedLayoutResolver($layouts, $cache, $source);
+// Load layout - first call parses and caches, subsequent calls use cache
+$resolved = $loader->load('layouts/page.lyt', 'page');
 
-// First call resolves and caches, subsequent calls return cached result
-$resolved = $resolver->resolve('page');
+// File changes automatically invalidate cache (uses mtime)
 ```
 
 ### With TTL
 
 ```php
 // Cache expires after 1 hour (3600 seconds)
-$resolver = new CachedLayoutResolver($layouts, $cache, $source, ttl: 3600);
+$loader = new LayoutLoader(cache: $cache, ttl: 3600);
+```
+
+### Loading from Strings
+
+For dynamic layout sources, use `loadFromString()` which caches based on content hash:
+
+```php
+$resolved = $loader->loadFromString($layoutString, 'page');
 ```
 
 ### Using Other PSR-16 Caches
@@ -255,16 +363,14 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 $redis = RedisAdapter::createConnection('redis://localhost');
 $cache = new Psr16Cache(new RedisAdapter($redis));
 
-$resolver = new CachedLayoutResolver($layouts, $cache, $source);
+$loader = new LayoutLoader(cache: $cache);
 ```
 
 ### Cache Invalidation
 
-Cache keys include a hash of the source content, so changes to layout files automatically invalidate the cache. For manual invalidation:
-
-```php
-$resolver->clearCache();
-```
+- **File-based**: Cache automatically invalidates when file modification time changes
+- **String-based**: Cache key includes content hash, so changes create new entries
+- **Manual**: Call `$loader->clearCache()` to clear all cached layouts
 
 ## Development
 
@@ -287,7 +393,7 @@ Generate and preview E2E test outputs:
 
 ```bash
 composer preview
-# Opens http://localhost:8080
+# Opens output/dashboard.html in your default browser
 ```
 
 ## Contributing

@@ -134,6 +134,7 @@ final class LayoutParser
                 break;
             }
 
+            // Legacy support: standalone ... marker
             if ($this->check(TokenType::Container)) {
                 $isContainer = true;
                 $this->advance();
@@ -143,7 +144,16 @@ final class LayoutParser
             if ($this->check(TokenType::Property)) {
                 $prop = $this->advance();
                 [$key, $value] = explode(':', $prop->value, 2);
-                $properties[trim($key)] = trim($value);
+                $key = trim($key);
+                $value = trim($value);
+
+                // Check for "component: ..." which marks a container slot
+                if ($key === 'component' && $value === '...') {
+                    $isContainer = true;
+                    continue;
+                }
+
+                $properties[$key] = $value;
                 continue;
             }
 
