@@ -34,7 +34,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_default_for_missing_key(): void
+    public function itReturnsDefaultForMissingKey(): void
     {
         $result = $this->cache->get('nonexistent', 'default');
 
@@ -42,7 +42,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_stores_and_retrieves_values(): void
+    public function itStoresAndRetrievesValues(): void
     {
         $this->cache->set('key', 'value');
 
@@ -50,7 +50,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_stores_complex_values(): void
+    public function itStoresComplexValues(): void
     {
         $data = ['name' => 'test', 'items' => [1, 2, 3]];
         $this->cache->set('complex', $data);
@@ -59,7 +59,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_stores_objects(): void
+    public function itStoresObjects(): void
     {
         $object = new \stdClass();
         $object->name = 'test';
@@ -74,7 +74,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_deletes_values(): void
+    public function itDeletesValues(): void
     {
         $this->cache->set('key', 'value');
         self::assertTrue($this->cache->has('key'));
@@ -84,7 +84,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_clears_all_values(): void
+    public function itClearsAllValues(): void
     {
         $this->cache->set('key1', 'value1');
         $this->cache->set('key2', 'value2');
@@ -96,7 +96,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_checks_if_key_exists(): void
+    public function itChecksIfKeyExists(): void
     {
         self::assertFalse($this->cache->has('key'));
 
@@ -106,7 +106,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_respects_integer_ttl(): void
+    public function itRespectsIntegerTtl(): void
     {
         $this->cache->set('key', 'value', 1);
 
@@ -118,7 +118,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_respects_dateinterval_ttl(): void
+    public function itRespectsDateintervalTtl(): void
     {
         $this->cache->set('key', 'value', new \DateInterval('PT1S'));
 
@@ -130,7 +130,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_gets_multiple_values(): void
+    public function itGetsMultipleValues(): void
     {
         $this->cache->set('key1', 'value1');
         $this->cache->set('key2', 'value2');
@@ -143,7 +143,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_sets_multiple_values(): void
+    public function itSetsMultipleValues(): void
     {
         $this->cache->setMultiple([
             'key1' => 'value1',
@@ -155,7 +155,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_deletes_multiple_values(): void
+    public function itDeletesMultipleValues(): void
     {
         $this->cache->set('key1', 'value1');
         $this->cache->set('key2', 'value2');
@@ -167,7 +167,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_sanitizes_cache_keys(): void
+    public function itSanitizesCacheKeys(): void
     {
         $this->cache->set('key/with:special.chars', 'value');
 
@@ -175,7 +175,7 @@ final class FilesystemCacheTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_directory_if_not_exists(): void
+    public function itCreatesDirectoryIfNotExists(): void
     {
         $newDir = $this->cacheDir . '/nested/path';
         $cache = new FilesystemCache($newDir);

@@ -217,7 +217,7 @@ final class CssGenerator
             return '1fr';
         }
 
-        return $slots[$name]->properties['width'] ?? '1fr';
+        return $slots[$name]->properties['grid-width'] ?? '1fr';
     }
 
     /**
@@ -231,6 +231,6 @@ final class CssGenerator
             return 'auto';
         }
 
-        return $slots[$name]->properties['height'] ?? 'auto';
+        return $slots[$name]->properties['grid-height'] ?? 'auto';
     }
 }

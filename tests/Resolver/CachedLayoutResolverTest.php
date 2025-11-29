@@ -37,7 +37,7 @@ final class CachedLayoutResolverTest extends TestCase
     }
 
     #[Test]
-    public function it_resolves_layout_and_caches_result(): void
+    public function itResolvesLayoutAndCachesResult(): void
     {
         $source = <<<'LAYOUT'
 @layout page {
@@ -67,7 +67,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_returns_cached_layout_on_second_call(): void
+    public function itReturnsCachedLayoutOnSecondCall(): void
     {
         $source = '@layout base {}';
 
@@ -84,7 +84,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_different_keys_for_different_sources(): void
+    public function itGeneratesDifferentKeysForDifferentSources(): void
     {
         $source1 = '@layout page1 {}';
         $source2 = '@layout page2 {}';
@@ -111,7 +111,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_invalidates_cache_when_source_changes(): void
+    public function itInvalidatesCacheWhenSourceChanges(): void
     {
         $source1 = <<<'LAYOUT'
 @layout page {
@@ -150,7 +150,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_clears_cache(): void
+    public function itClearsCache(): void
     {
         $source = '@layout page {}';
 
@@ -166,7 +166,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_resolves_inheritance_and_caches(): void
+    public function itResolvesInheritanceAndCaches(): void
     {
         $source = <<<'LAYOUT'
 @layout base {
@@ -175,7 +175,7 @@ LAYOUT;
   +----------+
 
   [content]
-    ...
+    component: ...
 }
 
 @layout page extends base {
@@ -198,7 +198,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_works_with_any_psr16_cache(): void
+    public function itWorksWithAnyPsr16Cache(): void
     {
         $source = '@layout test {}';
         $parser = new LayoutParser();
@@ -274,7 +274,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_supports_ttl(): void
+    public function itSupportsTtl(): void
     {
         $source = '@layout page {}';
 

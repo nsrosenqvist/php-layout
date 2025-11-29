@@ -19,7 +19,7 @@ final class LayoutResolverTest extends TestCase
     }
 
     #[Test]
-    public function it_resolves_simple_layout(): void
+    public function itResolvesSimpleLayout(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -43,7 +43,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_resolves_inheritance(): void
+    public function itResolvesInheritance(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -52,7 +52,7 @@ LAYOUT;
   +----------+
 
   [content]
-    ...
+    component: ...
 }
 
 @layout page extends base {
@@ -71,7 +71,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_inherits_grid_from_parent(): void
+    public function itInheritsGridFromParent(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -103,7 +103,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_merges_properties_from_inheritance(): void
+    public function itMergesPropertiesFromInheritance(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -133,7 +133,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_resolves_nested_slots(): void
+    public function itResolvesNestedSlots(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -163,7 +163,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_resolves_deep_inheritance(): void
+    public function itResolvesDeepInheritance(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -172,12 +172,12 @@ LAYOUT;
   +----------+
 
   [content]
-    ...
+    component: ...
 }
 
 @layout page extends base {
   [content]
-    width: 800px
+    grid-width: 800px
 }
 
 @layout article extends page {
@@ -192,12 +192,12 @@ LAYOUT;
 
         self::assertSame('article', $resolved->name);
         $content = $resolved->slots['content'];
-        self::assertSame('800px', $content->properties['width']);
+        self::assertSame('800px', $content->properties['grid-width']);
         self::assertSame('Article', $content->getComponent());
     }
 
     #[Test]
-    public function it_throws_on_missing_layout(): void
+    public function itThrowsOnMissingLayout(): void
     {
         $input = '@layout base {}';
         $layouts = $this->parser->parse($input);
@@ -209,7 +209,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_throws_on_missing_parent(): void
+    public function itThrowsOnMissingParent(): void
     {
         $input = '@layout page extends missing {}';
         $layouts = $this->parser->parse($input);

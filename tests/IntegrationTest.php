@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 final class IntegrationTest extends TestCase
 {
     #[Test]
-    public function it_parses_and_generates_full_website_layout(): void
+    public function itParsesAndGeneratesFullWebsiteLayout(): void
     {
         $input = file_get_contents(__DIR__ . '/../examples/website.lyt');
         self::assertIsString($input);
@@ -78,7 +78,7 @@ final class IntegrationTest extends TestCase
     }
 
     #[Test]
-    public function it_demonstrates_slot_inheritance(): void
+    public function itDemonstratesSlotInheritance(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -88,7 +88,7 @@ final class IntegrationTest extends TestCase
 
   [content]
     padding: 20px
-    ...
+    component: ...
 }
 
 @layout page extends base {

@@ -12,13 +12,13 @@
   +----------------------------------------------+
 
   [head]
-    height: 70px
+    grid-height: 70px
 
   [body]
-    width: 800px
+    grid-width: 800px
 
   [foot]
-    height: 50px
+    grid-height: 50px
 }
 
 @layout page extends base {
@@ -42,21 +42,21 @@
 
   [logo]
     component: Logo
-    width: 120px
+    grid-width: 120px
 
   [nav]
     component: MainNav
 
   [auth]
     component: AuthButtons
-    width: 150px
+    grid-width: 150px
 
   [sidebar]
     component: Sidebar
-    width: 220px
+    grid-width: 220px
 
   [content]
-    ...
+    component: ...
 
   [footer_nav]
     component: FooterNav
@@ -79,7 +79,7 @@
   }
 
   [breadcrumbs]
-    height: 40px
+    grid-height: 40px
     component: Breadcrumbs
 
   [article_head]

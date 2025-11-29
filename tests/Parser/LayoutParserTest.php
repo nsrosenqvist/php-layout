@@ -18,7 +18,7 @@ final class LayoutParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_empty_layout(): void
+    public function itParsesEmptyLayout(): void
     {
         $input = '@layout empty {}';
         $layouts = $this->parser->parse($input);
@@ -31,7 +31,7 @@ final class LayoutParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_layout_with_extends(): void
+    public function itParsesLayoutWithExtends(): void
     {
         $input = '@layout page extends base {}';
         $layouts = $this->parser->parse($input);
@@ -42,7 +42,7 @@ final class LayoutParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_layout_with_grid(): void
+    public function itParsesLayoutWithGrid(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -62,7 +62,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_parses_slot_definitions(): void
+    public function itParsesSlotDefinitions(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -91,8 +91,25 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_parses_container_marker(): void
+    public function itParsesContainerMarker(): void
     {
+        $input = <<<'LAYOUT'
+@layout page {
+  [content]
+    component: ...
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+
+        self::assertTrue($layouts[0]->slots['content']->isContainer);
+        self::assertFalse($layouts[0]->slots['content']->hasComponent());
+    }
+
+    #[Test]
+    public function itParsesLegacyContainerMarker(): void
+    {
+        // Legacy standalone ... syntax still works for backward compatibility
         $input = <<<'LAYOUT'
 @layout page {
   [content]
@@ -107,7 +124,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_parses_nested_grid_in_slot(): void
+    public function itParsesNestedGridInSlot(): void
     {
         $input = <<<'LAYOUT'
 @layout page extends base {
@@ -131,7 +148,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_parses_complete_layout(): void
+    public function itParsesCompleteLayout(): void
     {
         $input = <<<'LAYOUT'
 @layout page extends base {
@@ -166,10 +183,10 @@ LAYOUT;
 
   [sidebar]
     component: Sidebar
-    width: 220px
+    grid-width: 220px
 
   [content]
-    ...
+    component: ...
 
   [footer_nav]
     component: FooterNav
@@ -207,7 +224,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_parses_multiple_layouts(): void
+    public function itParsesMultipleLayouts(): void
     {
         $input = <<<'LAYOUT'
 @layout base {

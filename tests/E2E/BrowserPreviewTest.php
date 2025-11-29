@@ -21,7 +21,7 @@ final class BrowserPreviewTest extends TestCase
     private const OUTPUT_DIR = __DIR__ . '/../../output';
 
     #[Test]
-    public function it_generates_complete_html_page(): void
+    public function itGeneratesCompleteHtmlPage(): void
     {
         $layout = <<<'LAYOUT'
 @layout page {
@@ -34,13 +34,13 @@ final class BrowserPreviewTest extends TestCase
   +------------------------------------------+
 
   [header]
-    height: 70px
+    grid-height: 70px
     background: #2563eb
     padding: 0 20px
     align: center
 
   [sidebar]
-    width: 250px
+    grid-width: 250px
     background: #f1f5f9
     padding: 20px
 
@@ -48,7 +48,7 @@ final class BrowserPreviewTest extends TestCase
     padding: 30px
 
   [footer]
-    height: 60px
+    grid-height: 60px
     background: #1e293b
     padding: 0 20px
     align: center
@@ -110,7 +110,7 @@ LAYOUT;
             ->setContent('header', $box->render(
                 ['align' => 'center', 'justify' => 'space-between'],
                 '<span style="color: white; font-weight: bold; font-size: 1.5rem;">Dashboard</span>
-                 <nav style="display: flex; gap: 20px;">
+                 <nav style="display: flex; gap: 20px; margin-left: 40px;">
                    <a href="#" style="color: white; text-decoration: none;">Home</a>
                    <a href="#" style="color: white; text-decoration: none;">Reports</a>
                    <a href="#" style="color: white; text-decoration: none;">Settings</a>
@@ -175,7 +175,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_simple_centered_layout(): void
+    public function itGeneratesSimpleCenteredLayout(): void
     {
         $layout = <<<'LAYOUT'
 @layout centered {
@@ -188,7 +188,7 @@ LAYOUT;
   +------------------------------------------+
 
   [header]
-    height: 60px
+    grid-height: 60px
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
     padding: 0 20px
     align: center
@@ -201,7 +201,7 @@ LAYOUT;
     justify: center
 
   [footer]
-    height: 50px
+    grid-height: 50px
     background: #1a1a2e
     align: center
     justify: center

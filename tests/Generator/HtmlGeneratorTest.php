@@ -23,7 +23,7 @@ final class HtmlGeneratorTest extends TestCase
     }
 
     #[Test]
-    public function it_generates_simple_grid_html(): void
+    public function itGeneratesSimpleGridHtml(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -49,7 +49,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_multi_slot_html(): void
+    public function itGeneratesMultiSlotHtml(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -79,7 +79,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_inserts_component_content(): void
+    public function itInsertsComponentContent(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -104,7 +104,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_container_slot_placeholder(): void
+    public function itGeneratesContainerSlotPlaceholder(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -113,7 +113,7 @@ LAYOUT;
   +----------+
 
   [content]
-    ...
+    component: ...
 }
 LAYOUT;
 
@@ -128,7 +128,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_uses_custom_container_class(): void
+    public function itUsesCustomContainerClass(): void
     {
         $input = <<<'LAYOUT'
 @layout base {
@@ -150,7 +150,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_generates_nested_grids(): void
+    public function itGeneratesNestedGrids(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -187,7 +187,7 @@ LAYOUT;
     }
 
     #[Test]
-    public function it_renders_content_by_slot_name(): void
+    public function itRendersContentBySlotName(): void
     {
         $input = <<<'LAYOUT'
 @layout page {
@@ -206,5 +206,74 @@ LAYOUT;
         $html = $this->htmlGenerator->generate($resolved, $components);
 
         self::assertStringContainsString('<header>My Header</header>', $html);
+    }
+
+    #[Test]
+    public function itUsesDefaultComponentForSlotsWithoutExplicitComponent(): void
+    {
+        $input = <<<'LAYOUT'
+@layout page {
+  +----------+
+  |  header  |
+  +----------+
+
+  [header]
+    background: blue
+    padding: 20px
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->register('box', new \PhpLayout\Component\BoxComponent())
+            ->setDefaultComponent('box');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // Default component should render the slot with its properties
+        self::assertStringContainsString('background: blue', $html);
+        self::assertStringContainsString('padding: 20px', $html);
+    }
+
+    #[Test]
+    public function itPrefersExplicitComponentOverDefault(): void
+    {
+        $input = <<<'LAYOUT'
+@layout page {
+  +----------+
+  |  header  |
+  +----------+
+
+  [header]
+    component: custom
+    color: red
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $customComponent = new class () implements \PhpLayout\Component\ComponentInterface {
+            public function render(array $properties, string $content = ''): string
+            {
+                return '<custom>' . ($properties['color'] ?? 'none') . '</custom>';
+            }
+        };
+
+        $components = new ComponentRegistry();
+        $components
+            ->register('box', new \PhpLayout\Component\BoxComponent())
+            ->register('custom', $customComponent)
+            ->setDefaultComponent('box');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // Explicit component should be used, not default
+        self::assertStringContainsString('<custom>red</custom>', $html);
     }
 }
