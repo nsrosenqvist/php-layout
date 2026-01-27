@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpLayout\Resolver;
 
+use PhpLayout\Ast\Breakpoint;
 use PhpLayout\Ast\Grid;
 use PhpLayout\Ast\Layout;
 use PhpLayout\Ast\ResolvedLayout;
@@ -43,6 +44,7 @@ final class LayoutResolver
         // Start with empty resolved state
         $grid = null;
         $slots = [];
+        $breakpoints = [];
 
         // Apply each layout in the chain (from base to child)
         foreach ($chain as $chainLayout) {
@@ -55,12 +57,15 @@ final class LayoutResolver
             foreach ($chainLayout->slots as $slotName => $slotDef) {
                 $slots = $this->mergeSlot($slots, $slotName, $slotDef);
             }
+
+            // Merge breakpoints (child overrides parent)
+            $breakpoints = $this->mergeBreakpoints($breakpoints, $chainLayout->breakpoints);
         }
 
         // Build resolved slots with children
         $resolvedSlots = $this->buildResolvedSlots($slots, $grid);
 
-        return new ResolvedLayout($name, $grid, $resolvedSlots);
+        return new ResolvedLayout($name, $grid, $resolvedSlots, $breakpoints);
     }
 
     /**
@@ -120,6 +125,18 @@ final class LayoutResolver
         );
 
         return $slots;
+    }
+
+    /**
+     * Merge breakpoints from parent and child (child wins).
+     *
+     * @param array<string, Breakpoint> $parent
+     * @param array<string, Breakpoint> $child
+     * @return array<string, Breakpoint>
+     */
+    private function mergeBreakpoints(array $parent, array $child): array
+    {
+        return array_merge($parent, $child);
     }
 
     /**

@@ -245,4 +245,60 @@ LAYOUT;
         self::assertSame('base', $layouts[0]->name);
         self::assertSame('page', $layouts[1]->name);
     }
+
+    #[Test]
+    public function itParsesBreakpointsBlock(): void
+    {
+        $input = <<<'LAYOUT'
+@breakpoints {
+  sm: 300px
+  md: 600px
+  lg: 900px
+}
+
+@layout page {
+  +----------+
+  |  content |
+  +----------+
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+
+        self::assertCount(1, $layouts);
+        self::assertCount(3, $layouts[0]->breakpoints);
+        self::assertSame('300px', $layouts[0]->breakpoints['sm']->value);
+        self::assertSame('600px', $layouts[0]->breakpoints['md']->value);
+        self::assertSame('900px', $layouts[0]->breakpoints['lg']->value);
+    }
+
+    #[Test]
+    public function itAppliesBreakpointsToAllLayouts(): void
+    {
+        $input = <<<'LAYOUT'
+@breakpoints {
+  sm: 480px
+}
+
+@layout base {
+  +----------+
+  |  header  |
+  +----------+
+}
+
+@layout page extends base {
+  [header]
+    component: Header
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+
+        self::assertCount(2, $layouts);
+        // Both layouts should have the breakpoints
+        self::assertCount(1, $layouts[0]->breakpoints);
+        self::assertCount(1, $layouts[1]->breakpoints);
+        self::assertSame('480px', $layouts[0]->breakpoints['sm']->value);
+        self::assertSame('480px', $layouts[1]->breakpoints['sm']->value);
+    }
 }

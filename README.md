@@ -184,6 +184,150 @@ The built-in `BoxComponent` supports:
 
 Custom components can define and require their own properties.
 
+### Responsive Operators
+
+Define responsive behavior directly on grid column separators. Operators are placed on the boundary lines between cells and affect the column immediately to the **right** of that boundary.
+
+#### Defining Breakpoints
+
+First, define your breakpoints in a `@breakpoints` block:
+
+```
+@breakpoints {
+  sm: 480px
+  md: 768px
+  lg: 1024px
+}
+```
+
+Breakpoints use a **desktop-first** approach with `max-width` media queries. Transformations are cumulative—smaller breakpoints inherit all transformations from larger ones.
+
+#### Basic Example
+
+```
+@layout responsive {
+  +------------------------------------------+
+  |                 header                   |
+  +!sm----------|-------------|>md-----------+
+  |  sidebar    |   content   |    aside     |
+  +-------------|-------------|-------------+
+  |                 footer                   |
+  +------------------------------------------+
+}
+```
+
+In this example:
+- `!sm` on the first boundary hides `sidebar` at ≤480px
+- `>md` on the third boundary folds `aside` to a new row at ≤768px
+
+#### Available Operators
+
+| Operator | Name | Description |
+|----------|------|-------------|
+| `>bp` | **Fold down** | Column becomes a new full-width row below |
+| `<bp` | **Fold up** | Column becomes a new full-width row above |
+| `>>bp` | **Nest right** | Column removed from grid; nests INTO the slot to its left |
+| `<<bp` | **Nest left** | Column removed from grid; nests INTO the slot to its right |
+| `!bp` | **Hide** | Column is hidden (`display: none`) |
+
+Where `bp` is a breakpoint name like `sm`, `md`, or `lg`.
+
+#### Operator Placement
+
+Operators are placed on the **horizontal boundary line** between rows. The operator affects the column **to the right** of that boundary position:
+
+```
++<<md--------|-------------|>>lg--------+
+|    nav     |   content   |   panel    |
++------------|-------------|------------+
+```
+
+- `<<md` before `nav`: At ≤768px, `nav` nests into `content` (its right neighbor)
+- `>>lg` before `panel`: At ≤1024px, `panel` nests into `content` (its left neighbor)
+
+#### Fold vs Nest
+
+**Fold (`>`, `<`)** — The column becomes a separate full-width row:
+
+```
++-----------|>md-----------+
+|  content  |    aside     |
++-----------|--------------+
+```
+
+At ≤768px, `aside` moves to a new row below `content`:
+```css
+grid-template-areas:
+  "content"
+  "aside";
+```
+
+**Nest (`>>`, `<<`)** — The column is completely removed from the grid:
+
+```
++-----------|>>md----------+
+|  content  |    aside     |
++-----------|--------------+
+```
+
+At ≤768px, `aside` is removed from grid areas and hidden with `display: none`. Its content is intended to be rendered inside the target slot (useful for mobile menus, collapsible panels, etc.).
+
+#### Cumulative Breakpoints (Desktop-First)
+
+Transformations cascade from larger to smaller breakpoints. Each smaller breakpoint includes all transformations from larger ones:
+
+```
+@breakpoints {
+  sm: 480px
+  md: 768px
+  lg: 1024px
+}
+
+@layout progressive {
+  +--------------------------------------------------------+
+  |                        header                          |
+  +<<md---------|-------------|-------------|>>lg----------+
+  |    nav      |   primary   |  secondary  |    panel     |
+  +-------------|-------------|-------------|-------------+
+  |                        footer                          |
+  +--------------------------------------------------------+
+}
+```
+
+This creates a progressive collapse:
+
+| Viewport | Columns | Hidden |
+|----------|---------|--------|
+| > 1024px | 4 | none |
+| ≤ 1024px | 3 | panel |
+| ≤ 768px | 2 | panel, nav |
+
+The generated CSS for ≤768px includes both `panel` AND `nav` hidden, because transformations accumulate.
+
+#### Targeting Specific Slots
+
+Use `:target` syntax to specify which slot to nest/fold into:
+
+```
++-----------|>>sm:content---+
+|  content  |    aside      |
++-----------|---------------+
+```
+
+This explicitly nests `aside` into `content` at the `sm` breakpoint.
+
+#### Multiple Operators
+
+Combine operators for different breakpoints on the same boundary:
+
+```
++-----------|>>md!sm--------+
+|  content  |    aside      |
++-----------|---------------+
+```
+
+This nests `aside` into `content` at `md`, and hides it entirely at `sm`.
+
 ### Layout Inheritance
 
 Extend existing layouts and fill their slots:

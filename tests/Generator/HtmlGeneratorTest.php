@@ -276,4 +276,190 @@ LAYOUT;
         // Explicit component should be used, not default
         self::assertStringContainsString('<custom>red</custom>', $html);
     }
+
+    #[Test]
+    public function itNestsContentWithNestLeftOperator(): void
+    {
+        // Test: nav nests INTO main using << (nest left = into right neighbor)
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +<<md------+----------+
+  |  nav     |  main    |
+  +----------+----------+
+
+  [nav]
+    component: nav
+
+  [main]
+    component: main
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('nav', '<nav>Navigation</nav>')
+            ->setContent('main', '<main>Content</main>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // Original slot content should be present
+        self::assertStringContainsString('<nav>Navigation</nav>', $html);
+        self::assertStringContainsString('<main>Content</main>', $html);
+
+        // nav has <<md = nest left = nav flows into main (its right neighbor)
+        // So nav's content should appear nested inside main
+        self::assertStringContainsString('layout__main--nested-nav-md', $html);
+    }
+
+    #[Test]
+    public function itNestsContentWithNestRightOperator(): void
+    {
+        // Test: sidebar nests INTO main using >> (nest right = into left neighbor)
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +----------+>>md------+
+  |  main    |  sidebar |
+  +----------+----------+
+
+  [main]
+    component: main
+
+  [sidebar]
+    component: sidebar
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('main', '<main>Content</main>')
+            ->setContent('sidebar', '<aside>Sidebar</aside>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // Original slot content should be present
+        self::assertStringContainsString('<main>Content</main>', $html);
+        self::assertStringContainsString('<aside>Sidebar</aside>', $html);
+
+        // sidebar has >>md = nest right = sidebar flows into main (its left neighbor)
+        // So sidebar's content should appear nested inside main
+        self::assertStringContainsString('layout__main--nested-sidebar-md', $html);
+    }
+
+    #[Test]
+    public function itPrependsContentForNestLeftDirection(): void
+    {
+        // << means content flows left (into right neighbor), which should PREPEND
+        // because the nested content visually "comes from the left"
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +<<md------+----------+
+  |  nav     |  main    |
+  +----------+----------+
+
+  [nav]
+    component: nav
+
+  [main]
+    component: main
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('nav', '<nav>Navigation</nav>')
+            ->setContent('main', '<main>Content</main>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // For nest left (<<), the nested content should be PREPENDED
+        // Find positions in the main div
+        $mainDivStart = strpos($html, '<div class="layout__main">');
+        self::assertNotFalse($mainDivStart, 'Main div should exist');
+
+        // Get content after main div starts
+        $afterMainDiv = substr($html, $mainDivStart);
+
+        // Nested content (from nav nesting into main) should appear BEFORE main's own content
+        $nestedPos = strpos($afterMainDiv, 'layout__main--nested-nav-md');
+        $ownContentPos = strpos($afterMainDiv, '<main>Content</main>');
+
+        self::assertNotFalse($nestedPos, 'Nested wrapper should exist');
+        self::assertNotFalse($ownContentPos, 'Own content should exist');
+        self::assertLessThan($ownContentPos, $nestedPos, 'For nest left (<<), nested content should appear BEFORE own content');
+    }
+
+    #[Test]
+    public function itAppendsContentForNestRightDirection(): void
+    {
+        // >> means content flows right (into left neighbor), which should APPEND
+        // because the nested content visually "comes from the right"
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +----------+>>md------+
+  |  main    |  sidebar |
+  +----------+----------+
+
+  [main]
+    component: main
+
+  [sidebar]
+    component: sidebar
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('main', '<main>Content</main>')
+            ->setContent('sidebar', '<aside>Sidebar</aside>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // For nest right (>>), the nested content should be APPENDED
+        // Find positions in the main div
+        $mainDivStart = strpos($html, '<div class="layout__main">');
+        self::assertNotFalse($mainDivStart, 'Main div should exist');
+
+        // Get content after main div starts
+        $afterMainDiv = substr($html, $mainDivStart);
+
+        // Main's own content should appear BEFORE nested content (from sidebar nesting into main)
+        $nestedPos = strpos($afterMainDiv, 'layout__main--nested-sidebar-md');
+        $ownContentPos = strpos($afterMainDiv, '<main>Content</main>');
+
+        self::assertNotFalse($nestedPos, 'Nested wrapper should exist');
+        self::assertNotFalse($ownContentPos, 'Own content should exist');
+        self::assertLessThan($nestedPos, $ownContentPos, 'For nest right (>>), own content should appear BEFORE nested content');
+    }
 }

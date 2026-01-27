@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpLayout\Parser;
 
+use PhpLayout\Ast\Breakpoint;
 use PhpLayout\Ast\Grid;
 use PhpLayout\Ast\Layout;
 use PhpLayout\Ast\SlotDefinition;
@@ -17,6 +18,9 @@ final class LayoutParser
     private array $tokens;
     private int $position = 0;
     private GridParser $gridParser;
+
+    /** @var array<string, Breakpoint> */
+    private array $globalBreakpoints = [];
 
     public function __construct()
     {
@@ -33,6 +37,7 @@ final class LayoutParser
         $lexer = new Lexer($input);
         $this->tokens = $lexer->tokenize();
         $this->position = 0;
+        $this->globalBreakpoints = [];
 
         $layouts = [];
 
@@ -41,6 +46,11 @@ final class LayoutParser
 
             if ($this->isAtEnd()) {
                 break;
+            }
+
+            if ($this->check(TokenType::Breakpoints)) {
+                $this->parseBreakpointsBlock();
+                continue;
             }
 
             if ($this->check(TokenType::Layout)) {
@@ -102,7 +112,51 @@ final class LayoutParser
 
         $this->consume(TokenType::BraceClose, '}');
 
-        return new Layout($name, $extends, $grid, $slots);
+        return new Layout($name, $extends, $grid, $slots, $this->globalBreakpoints);
+    }
+
+    /**
+     * Parse a @breakpoints { ... } block.
+     *
+     * Syntax:
+     *   @breakpoints {
+     *     sm: 300px
+     *     md: 600px
+     *   }
+     */
+    private function parseBreakpointsBlock(): void
+    {
+        $this->consume(TokenType::Breakpoints, '@breakpoints');
+        $this->skipNewlines();
+        $this->consume(TokenType::BraceOpen, '{');
+        $this->skipNewlines();
+
+        while (!$this->check(TokenType::BraceClose) && !$this->isAtEnd()) {
+            $this->skipNewlines();
+
+            if ($this->check(TokenType::BraceClose)) {
+                break;
+            }
+
+            if ($this->check(TokenType::Property)) {
+                $prop = $this->advance();
+                [$name, $value] = explode(':', $prop->value, 2);
+                $name = trim($name);
+                $value = trim($value);
+
+                $this->globalBreakpoints[$name] = new Breakpoint($name, $value);
+                continue;
+            }
+
+            if ($this->check(TokenType::Newline)) {
+                $this->advance();
+                continue;
+            }
+
+            $this->advance();
+        }
+
+        $this->consume(TokenType::BraceClose, '}');
     }
 
     private function parseSlotDefinition(): SlotDefinition

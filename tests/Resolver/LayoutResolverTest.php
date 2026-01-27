@@ -219,4 +219,88 @@ LAYOUT;
         $this->expectExceptionMessage("Parent layout 'missing' not found");
         $resolver->resolve('page');
     }
+
+    #[Test]
+    public function itInheritsBreakpointsFromParent(): void
+    {
+        $input = <<<'LAYOUT'
+@breakpoints {
+  sm: 480px
+  md: 768px
+}
+
+@layout base {
+  +----------+
+  | content  |
+  +----------+
+}
+
+@layout page extends base {
+  [content]
+    component: Article
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        // Child should inherit breakpoints from global scope
+        self::assertArrayHasKey('sm', $resolved->breakpoints);
+        self::assertArrayHasKey('md', $resolved->breakpoints);
+        self::assertSame('480px', $resolved->breakpoints['sm']->value);
+    }
+
+    #[Test]
+    public function itMergesBreakpointsInInheritance(): void
+    {
+        $input = <<<'LAYOUT'
+@breakpoints {
+  sm: 480px
+}
+
+@layout base {
+  +----------+
+  | content  |
+  +----------+
+}
+
+@layout page extends base {}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+
+        $base = $resolver->resolve('base');
+        $page = $resolver->resolve('page');
+
+        // Both should have the global breakpoints
+        self::assertCount(1, $base->breakpoints);
+        self::assertCount(1, $page->breakpoints);
+    }
+
+    #[Test]
+    public function itResolvesLayoutWithResponsiveOperators(): void
+    {
+        $input = <<<'LAYOUT'
+@breakpoints {
+  sm: 480px
+}
+
+@layout page {
+  +-----------|------------>>sm------+
+  | nav       | content    | aside   |
+  +-----------|------------|---------+
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        // Grid should have responsive operators
+        self::assertNotNull($resolved->grid);
+        self::assertTrue($resolved->grid->hasResponsiveOperators());
+        self::assertContains('sm', $resolved->grid->getReferencedBreakpoints());
+    }
 }

@@ -11,11 +11,13 @@ final readonly class ResolvedLayout
 {
     /**
      * @param array<string, ResolvedSlot> $slots
+     * @param array<string, Breakpoint> $breakpoints Named breakpoints for responsive behavior
      */
     public function __construct(
         public string $name,
         public ?Grid $grid,
         public array $slots,
+        public array $breakpoints = [],
     ) {
     }
 }

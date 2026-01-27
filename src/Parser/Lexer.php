@@ -123,6 +123,10 @@ final class Lexer
             return new Token(TokenType::Layout, '@layout', $this->line, $startColumn);
         }
 
+        if ($keyword === 'breakpoints') {
+            return new Token(TokenType::Breakpoints, '@breakpoints', $this->line, $startColumn);
+        }
+
         return new Token(TokenType::Identifier, '@' . $keyword, $this->line, $startColumn);
     }
 

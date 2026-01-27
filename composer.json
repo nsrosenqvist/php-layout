@@ -18,15 +18,18 @@
         "psr/simple-cache": "^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.0",
+        "brianium/paratest": "^7.8",
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "nsrosenqvist/phpdoc-validator": "^1.1.2",
         "phpstan/phpstan": "^2.0",
-        "friendsofphp/php-cs-fixer": "^3.64"
+        "phpunit/phpunit": "^11.0"
     },
     "scripts": {
-        "test": "phpunit --testdox",
-        "test:unit": "phpunit --testsuite=unit --testdox",
+        "test": "paratest --testdox",
+        "test:unit": "paratest --testsuite=unit --testdox",
         "test:e2e": "phpunit --testsuite=e2e --testdox",
-        "test:coverage": "phpunit --coverage-html=coverage",
+        "test:coverage": "paratest --coverage-html=coverage",
+        "typecheck": "phpdoc-validator src/",
         "analyze": "phpstan analyze --memory-limit=256M",
         "analyze:baseline": "phpstan analyze --memory-limit=256M --generate-baseline",
         "analyse": "@analyze",
@@ -35,12 +38,33 @@
         "format:check": "php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff",
         "check": [
             "@format:check",
+            "@typecheck",
             "@analyze",
             "@test"
         ],
         "preview": [
             "@test:e2e",
             "@php tests/E2E/scripts/open-preview.php"
+        ],
+        "preview:responsive": [
+            "@test:e2e",
+            "@php tests/E2E/scripts/open-responsive-preview.php"
+        ],
+        "preview:holy-grail": [
+            "@test:e2e",
+            "@php tests/E2E/scripts/open-responsive-preview.php holy-grail"
+        ],
+        "preview:blog": [
+            "@test:e2e",
+            "@php tests/E2E/scripts/open-responsive-preview.php blog"
+        ],
+        "preview:progressive": [
+            "@test:e2e",
+            "@php tests/E2E/scripts/open-responsive-preview.php progressive"
+        ],
+        "preview:all": [
+            "@test:e2e",
+            "@php tests/E2E/scripts/open-responsive-preview.php all"
         ]
     },
     "config": {
