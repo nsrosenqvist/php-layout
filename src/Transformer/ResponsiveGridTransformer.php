@@ -149,11 +149,13 @@ final class ResponsiveGridTransformer
         array $nestedColumns,
         array $foldedColumns,
     ): array {
-        $result = [];
+        $baseRows = [];
+        /** @var list<array{cell: TransformedCell, direction: string}> $pendingFolds */
+        $pendingFolds = [];
 
         foreach ($grid->rows as $rowIndex => $row) {
             $transformedCells = [];
-            $foldedCells = []; // Cells that become new rows (> / <)
+            $foldedCellsForRow = []; // Cells that become new rows (> / <)
 
             // Map column boundary index to cell
             $cellColumnMap = $this->buildCellColumnMap($row, $grid->columnBoundaries);
@@ -207,14 +209,24 @@ final class ResponsiveGridTransformer
                 if ($columnIndex !== null && isset($foldedColumns[$columnIndex])) {
                     $fold = $foldedColumns[$columnIndex];
                     $target = $fold['target'];
+                    $direction = $fold['direction'];
 
-                    // Cell becomes a new row
-                    $foldedCells[] = new TransformedCell(
+                    // Cell becomes a new row - collect for later positioning
+                    $foldedCell = new TransformedCell(
                         $cell->name,
                         $cell->columnSpan,
                         $target,
                         'fold',
+                        $direction,
                     );
+
+                    if ($target !== null) {
+                        // Has explicit target - will be positioned later
+                        $pendingFolds[] = ['cell' => $foldedCell, 'direction' => $direction];
+                    } else {
+                        // No target - add after this row (original behavior)
+                        $foldedCellsForRow[] = $foldedCell;
+                    }
                     continue;
                 }
 
@@ -239,13 +251,99 @@ final class ResponsiveGridTransformer
             }
 
             if ($transformedCells !== []) {
-                $result[] = new TransformedRow($transformedCells);
+                $baseRows[] = new TransformedRow($transformedCells);
             }
 
-            // Add folded cells as new rows after this row (> / <)
-            foreach ($foldedCells as $foldedCell) {
-                $result[] = new TransformedRow([$foldedCell]);
+            // Add folded cells without targets as new rows after this row
+            foreach ($foldedCellsForRow as $foldedCell) {
+                $baseRows[] = new TransformedRow([$foldedCell]);
             }
+        }
+
+        // Now insert pending folds at their target positions
+        return $this->insertFoldedRowsAtTargets($baseRows, $pendingFolds);
+    }
+
+    /**
+     * Insert folded rows at their target positions.
+     *
+     * @param list<TransformedRow> $rows
+     * @param list<array{cell: TransformedCell, direction: string}> $pendingFolds
+     * @return list<TransformedRow>
+     */
+    private function insertFoldedRowsAtTargets(array $rows, array $pendingFolds): array
+    {
+        if ($pendingFolds === []) {
+            return $rows;
+        }
+
+        // Build a map of slot names to row indices
+        $slotToRowIndex = [];
+        foreach ($rows as $rowIndex => $row) {
+            foreach ($row->cells as $cell) {
+                $slotToRowIndex[$cell->name] = $rowIndex;
+            }
+        }
+
+        // Group folds by their insertion position
+        /** @var array<int, list<TransformedRow>> $insertAfter Rows to insert after a given index */
+        $insertAfter = [];
+        /** @var array<int, list<TransformedRow>> $insertBefore Rows to insert before a given index */
+        $insertBefore = [];
+        /** @var list<TransformedRow> $appendAtEnd Rows with targets not found - append at end */
+        $appendAtEnd = [];
+
+        foreach ($pendingFolds as $fold) {
+            $cell = $fold['cell'];
+            $direction = $fold['direction'];
+            $target = $cell->target;
+            $foldedRow = new TransformedRow([$cell]);
+
+            if ($target !== null && isset($slotToRowIndex[$target])) {
+                $targetRowIndex = $slotToRowIndex[$target];
+
+                if ($direction === 'down') {
+                    // > (fold down) - insert AFTER target
+                    if (!isset($insertAfter[$targetRowIndex])) {
+                        $insertAfter[$targetRowIndex] = [];
+                    }
+                    $insertAfter[$targetRowIndex][] = $foldedRow;
+                } else {
+                    // < (fold up) - insert BEFORE target
+                    if (!isset($insertBefore[$targetRowIndex])) {
+                        $insertBefore[$targetRowIndex] = [];
+                    }
+                    $insertBefore[$targetRowIndex][] = $foldedRow;
+                }
+            } else {
+                // Target not found - append at end
+                $appendAtEnd[] = $foldedRow;
+            }
+        }
+
+        // Rebuild the rows array with insertions
+        $result = [];
+        foreach ($rows as $rowIndex => $row) {
+            // Insert any rows that go BEFORE this row
+            if (isset($insertBefore[$rowIndex])) {
+                foreach ($insertBefore[$rowIndex] as $foldedRow) {
+                    $result[] = $foldedRow;
+                }
+            }
+
+            $result[] = $row;
+
+            // Insert any rows that go AFTER this row
+            if (isset($insertAfter[$rowIndex])) {
+                foreach ($insertAfter[$rowIndex] as $foldedRow) {
+                    $result[] = $foldedRow;
+                }
+            }
+        }
+
+        // Append any rows whose targets weren't found
+        foreach ($appendAtEnd as $foldedRow) {
+            $result[] = $foldedRow;
         }
 
         return $result;

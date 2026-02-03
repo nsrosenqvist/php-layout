@@ -1,0 +1,147 @@
+{
+    "signature": {
+        "cacheVersion": 1,
+        "validatorVersion": "1.1.2.0",
+        "phpVersion": "8.4",
+        "reportMissing": false,
+        "cacheMode": "hash"
+    },
+    "files": {
+        "/home/niklas/Code/php-layout/src/Ast/Grid.php": {
+            "key": "9993f0f3d8da94c0853c69c76a26c4c8f3d9a1a82b627ccdb0a52bfca74265ef",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/GridCell.php": {
+            "key": "6d8e1c948a38c56fae6861d0d6bf8c080af9f1ef87939f86a571ca59a720399b",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/GridRow.php": {
+            "key": "11747c26c3c8279da715704e480d6b4c74fbe8338b3f32300ad3195aaa055f3e",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/Layout.php": {
+            "key": "d042a9526b3b775f8e518988bbac3fec20c0bb980cb98636dd6f969815be97f2",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/ResolvedLayout.php": {
+            "key": "e8ef4d53b9fd15017050929fe15ded71775fc8cf2a85e9701613956ca9635182",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/ResolvedSlot.php": {
+            "key": "452844fab4823c889118b0bb9b9b915d9667e04c6614a88b5072b6003bf36c7d",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/SlotDefinition.php": {
+            "key": "207c925783a148ac62fda0ed6dacdb129945e96d7ebc75ae252af3101cfb626f",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/Breakpoint.php": {
+            "key": "ee470f3501682d7eead5de5606d325bd8fd5862ea115856ef0402aeb5452a7d1",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/ResponsiveOperatorType.php": {
+            "key": "3e047038d44679e1ec30ab3d4505db0b6f0330f6998f7f22d64849465da4f2cb",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/ResponsiveOperator.php": {
+            "key": "fd7f9203d8a058003289f3903742bf9b14d7732b93bfcf97a2ad1873772ae3a9",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/ColumnBoundary.php": {
+            "key": "91c54fbb891ca57ba944e794acdd6aaea98c24616c2229036b36fd9a48885e16",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Ast/RowBoundary.php": {
+            "key": "f640240ebecf2f475eb38badfd1c8112a95fcdc91917bd7ef36e94e1b35e1868",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Cache/FilesystemCache.php": {
+            "key": "3e169d97be2b009fad429818f29edb6a61fe08edbb8c57c154263a8b72c61c0e",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Component/BoxComponent.php": {
+            "key": "255e8856ed4d7e6f396217848f985ecb623326223dab3b60fc8b92d29d43a0a1",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Component/ComponentInterface.php": {
+            "key": "5dbcc33e72bbcda69c80045694bb25fe006e617e9082c3e3f254cce712df5849",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Component/ComponentRegistry.php": {
+            "key": "22cfb00ddb60ae8a905954b1c4dbd16466a355ea8a7d32b1d262d1ebebde011d",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Component/ContextAwareComponentInterface.php": {
+            "key": "1eb385a688fdae35eb24ccce26f3a583a24e3070455176d89413266f244e56c1",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Generator/CssGenerator.php": {
+            "key": "769a076a4f15aa3f994c80ec49eb12c94b65fcf04184da76ced87c1636e8967b",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Generator/HtmlGenerator.php": {
+            "key": "5be4d8f39ee9f055c00549380517c43ea8640abfc60e0dfdfb0b157d2c71c328",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Loader/LayoutLoader.php": {
+            "key": "e900a81970b45dc2f0e8d9ece20be2c5385357d331480c6a3abeab725a7138c7",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/GridParser.php": {
+            "key": "69f3664b61d64d5c84cbb94dfb8da20e602f8dda586d1cc081885ba1b88d1e1c",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/LayoutParser.php": {
+            "key": "a8046687e7985af11dde6957fec77f333369c6ade18b143b9e419e63a25a27d6",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/Lexer.php": {
+            "key": "135caa0a952403d0a6b1f2049c15ae1d69147546dab8717a4dd32c169fd10924",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/ParseException.php": {
+            "key": "28410e85e49e5cf47cba27920f119a1be15ee7e4677753da8c15431c216de419",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/Token.php": {
+            "key": "21f644dca4bd500cb4abd95630f562d2a6bb5cec02d9447b1c9441f77e96855a",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/TokenType.php": {
+            "key": "1659ad9c4a89e6adc8694245569d88db526d4ed5e326d2f78bb469975f60f022",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Parser/OperatorValidator.php": {
+            "key": "17c3f922351d6fc2ef8b43a574ab2b3ae2efed7198e5d276df21e2142865fc7c",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Render/RenderContext.php": {
+            "key": "3785ac27ac326182f13d20b130b095a81b9d9252534ff1db901a1492cd074979",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Resolver/CachedLayoutResolver.php": {
+            "key": "d1836b45b582e957ef16e9589227a3c9fb770087dbba593be55ad00fbd98e994",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Resolver/LayoutResolver.php": {
+            "key": "f850f8b1a00b0c42228a96ed69f354140c73c61e773aac256bc98497109ab0e5",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Transformer/ResponsiveGridTransformer.php": {
+            "key": "9e20966dccec10fcac65826e6f7219e4b65e2fa3c28daed5a7cc3aebf9cc8cda",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Transformer/TransformedGrid.php": {
+            "key": "81a579bd8598619be287dec5dbc97a3f346318c07508dfbcfb17977f0742ea86",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Transformer/TransformedRow.php": {
+            "key": "6bf76ac65c8b1f7973acf12d52f5e5071a016e0611996cf95e768d5aa5527062",
+            "methodIssues": []
+        },
+        "/home/niklas/Code/php-layout/src/Transformer/TransformedCell.php": {
+            "key": "d0cb1797aa83d9be9a90381d427727faf6ea75e13b1ebbdcc58b26dedd07f4f6",
+            "methodIssues": []
+        }
+    }
+}

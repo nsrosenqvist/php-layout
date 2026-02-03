@@ -462,4 +462,116 @@ LAYOUT;
         self::assertNotFalse($ownContentPos, 'Own content should exist');
         self::assertLessThan($nestedPos, $ownContentPos, 'For nest right (>>), own content should appear BEFORE nested content');
     }
+
+    #[Test]
+    public function itNestsContentIntoDistantTarget(): void
+    {
+        // Test: aside (column 4) nests into nav (column 1) - not adjacent
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +----------+----------+----------+>>md:nav---+
+  |  nav     |  content | sidebar  |  aside    |
+  +----------+----------+----------+-----------+
+
+  [nav]
+    component: nav
+
+  [content]
+    component: content
+
+  [sidebar]
+    component: sidebar
+
+  [aside]
+    component: aside
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('nav', '<nav>Navigation</nav>')
+            ->setContent('content', '<main>Main Content</main>')
+            ->setContent('sidebar', '<div>Sidebar</div>')
+            ->setContent('aside', '<aside>Aside Content</aside>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // aside should nest into nav (not sidebar, which is adjacent)
+        self::assertStringContainsString('layout__nav--nested-aside-md', $html);
+
+        // The aside content should appear in the nav wrapper
+        $navDivStart = strpos($html, '<div class="layout__nav">');
+        self::assertNotFalse($navDivStart, 'Nav div should exist');
+
+        $nestedWrapper = 'layout__nav--nested-aside-md';
+        self::assertStringContainsString($nestedWrapper, $html);
+
+        // Nested aside content should be inside the nav container
+        $afterNavDiv = substr($html, $navDivStart);
+        $nestedWrapperPos = strpos($afterNavDiv, $nestedWrapper);
+        self::assertNotFalse($nestedWrapperPos, 'Nested wrapper should exist inside nav');
+    }
+
+    #[Test]
+    public function itNestsContentIntoDifferentRowTarget(): void
+    {
+        // Test: aside (row 2) nests into header (row 1)
+        $input = <<<'LAYOUT'
+@breakpoints {
+  md: 768px
+}
+
+@layout page {
+  +--------------------------------------+
+  |               header                 |
+  +----------+----------+>>md:header-----+
+  |  nav     |  content |    aside       |
+  +----------+----------+----------------+
+
+  [header]
+    component: header
+
+  [nav]
+    component: nav
+
+  [content]
+    component: content
+
+  [aside]
+    component: aside
+}
+LAYOUT;
+
+        $layouts = $this->parser->parse($input);
+        $resolver = new LayoutResolver($layouts);
+        $resolved = $resolver->resolve('page');
+
+        $components = new ComponentRegistry();
+        $components
+            ->setContent('header', '<header>Site Header</header>')
+            ->setContent('nav', '<nav>Navigation</nav>')
+            ->setContent('content', '<main>Main Content</main>')
+            ->setContent('aside', '<aside>Aside Content</aside>');
+
+        $html = $this->htmlGenerator->generate($resolved, $components);
+
+        // aside should nest into header (cross-row target)
+        self::assertStringContainsString('layout__header--nested-aside-md', $html);
+
+        // The aside content should appear in the header wrapper
+        $headerDivStart = strpos($html, '<div class="layout__header">');
+        self::assertNotFalse($headerDivStart, 'Header div should exist');
+
+        $afterHeaderDiv = substr($html, $headerDivStart);
+        $nestedWrapperPos = strpos($afterHeaderDiv, 'layout__header--nested-aside-md');
+        self::assertNotFalse($nestedWrapperPos, 'Nested wrapper should exist inside header');
+    }
 }

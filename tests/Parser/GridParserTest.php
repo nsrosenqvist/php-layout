@@ -254,6 +254,44 @@ final class GridParserTest extends TestCase
     }
 
     #[Test]
+    public function itParsesFoldDownOperatorWithTarget(): void
+    {
+        // Fold down with explicit target
+        $lines = [
+            '+-----------|------------|>sm:footer---+',
+            '| nav       | content    | aside       |',
+            '+-----------|------------|-------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+
+        $asideBoundary = $grid->columnBoundaries[2];
+        self::assertCount(1, $asideBoundary->operators);
+        self::assertSame(ResponsiveOperatorType::FoldDown, $asideBoundary->operators[0]->type);
+        self::assertSame('sm', $asideBoundary->operators[0]->breakpoint);
+        self::assertSame('footer', $asideBoundary->operators[0]->target);
+    }
+
+    #[Test]
+    public function itParsesFoldUpOperatorWithTarget(): void
+    {
+        // Fold up with explicit target
+        $lines = [
+            '+-----------|------------|<md:header---+',
+            '| nav       | content    | aside       |',
+            '+-----------|------------|-------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+
+        $asideBoundary = $grid->columnBoundaries[2];
+        self::assertCount(1, $asideBoundary->operators);
+        self::assertSame(ResponsiveOperatorType::FoldUp, $asideBoundary->operators[0]->type);
+        self::assertSame('md', $asideBoundary->operators[0]->breakpoint);
+        self::assertSame('header', $asideBoundary->operators[0]->target);
+    }
+
+    #[Test]
     public function itParsesAllOperatorTypes(): void
     {
         // Test each operator type individually with explicit |

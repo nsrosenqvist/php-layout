@@ -197,6 +197,45 @@ final class ResponsiveGridTransformerTest extends TestCase
     }
 
     #[Test]
+    public function itHandlesNestWithDistantTarget(): void
+    {
+        // 4-column grid where the last column targets the first column (non-adjacent)
+        $lines = [
+            '+-----------|------------|------------|>>sm:nav---+',
+            '| nav       | content    | sidebar    | aside     |',
+            '+-----------|------------|------------|------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // The 'aside' column (boundary 3) should be nested into nav (not adjacent sidebar)
+        self::assertArrayHasKey(3, $transformed->nestedColumns);
+        self::assertSame('nav', $transformed->nestedColumns[3]['target']);
+        self::assertSame('right', $transformed->nestedColumns[3]['direction']);
+    }
+
+    #[Test]
+    public function itHandlesNestWithTargetInDifferentRow(): void
+    {
+        // Multi-row grid where a cell in row 2 targets a cell in row 1
+        $lines = [
+            '+----------------------------------+',
+            '|              header              |',
+            '+-----------|------------|>>sm:header--+',
+            '| nav       | content    | aside       |',
+            '+-----------|------------|-------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // The 'aside' column (boundary 2) should be nested into header (different row)
+        self::assertArrayHasKey(2, $transformed->nestedColumns);
+        self::assertSame('header', $transformed->nestedColumns[2]['target']);
+    }
+
+    #[Test]
     public function itGeneratesTemplateAreas(): void
     {
         $lines = [
@@ -264,6 +303,126 @@ final class ResponsiveGridTransformerTest extends TestCase
         // The 'aside' column (boundary 2) should be folded up as a new row
         self::assertArrayHasKey(2, $transformed->foldedColumns);
         self::assertSame('up', $transformed->foldedColumns[2]['direction']);
+    }
+
+    #[Test]
+    public function itFoldsDownColumnWithExplicitTarget(): void
+    {
+        // Fold down with explicit target - aside should fold and target footer
+        $lines = [
+            '+-----------|------------|>sm:footer--+',
+            '| nav       | content    | aside      |',
+            '+-----------|------------|------------+',
+            '|              footer                 |',
+            '+-------------------------------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // The 'aside' column (boundary 2) should be folded with target 'footer'
+        self::assertArrayHasKey(2, $transformed->foldedColumns);
+        self::assertSame('down', $transformed->foldedColumns[2]['direction']);
+        self::assertSame('footer', $transformed->foldedColumns[2]['target']);
+    }
+
+    #[Test]
+    public function itFoldsUpColumnWithExplicitTarget(): void
+    {
+        // Fold up with explicit target - aside should fold and target header
+        $lines = [
+            '+-------------------------------------+',
+            '|              header                 |',
+            '+-----------|------------|<sm:header-+',
+            '| nav       | content    | aside     |',
+            '+-----------|------------|-----------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // The 'aside' column (boundary 2) should be folded with target 'header'
+        self::assertArrayHasKey(2, $transformed->foldedColumns);
+        self::assertSame('up', $transformed->foldedColumns[2]['direction']);
+        self::assertSame('header', $transformed->foldedColumns[2]['target']);
+    }
+
+    #[Test]
+    public function itFoldsColumnWithDistantTarget(): void
+    {
+        // 4-column grid where aside folds down targeting nav (non-adjacent)
+        $lines = [
+            '+-----------|------------|------------|>sm:nav----+',
+            '| nav       | content    | sidebar    | aside     |',
+            '+-----------|------------|------------|------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // The 'aside' column (boundary 3) should be folded with target 'nav'
+        self::assertArrayHasKey(3, $transformed->foldedColumns);
+        self::assertSame('down', $transformed->foldedColumns[3]['direction']);
+        self::assertSame('nav', $transformed->foldedColumns[3]['target']);
+    }
+
+    #[Test]
+    public function itPositionsFoldDownAfterTarget(): void
+    {
+        // aside folds down and should appear AFTER footer
+        $lines = [
+            '+-----------|------------|>sm:footer--+',
+            '| nav       | content    | aside      |',
+            '+-----------|------------|------------+',
+            '|              footer                 |',
+            '+-------------------------------------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // Check the row order in template areas
+        $areas = $transformed->generateTemplateAreas();
+
+        // Expected order: nav+content row, footer, aside (after footer)
+        self::assertStringContainsString('nav', $areas);
+        self::assertStringContainsString('footer', $areas);
+        self::assertStringContainsString('aside', $areas);
+
+        // Verify order: footer should come before aside
+        // The template areas will have rows like: "nav content" then "footer footer" then "aside aside"
+        $footerPos = strpos($areas, 'footer');
+        $asidePos = strpos($areas, 'aside');
+        self::assertLessThan($asidePos, $footerPos, 'Footer should appear before aside (aside folds AFTER footer)');
+    }
+
+    #[Test]
+    public function itPositionsFoldUpBeforeTarget(): void
+    {
+        // aside folds up and should appear BEFORE header
+        $lines = [
+            '+-------------------------------------+',
+            '|              header                 |',
+            '+-----------|------------|<sm:header-+',
+            '| nav       | content    | aside     |',
+            '+-----------|------------|-----------+',
+        ];
+
+        $grid = $this->parser->parse($lines);
+        $transformed = $this->transformer->transform($grid, 'sm');
+
+        // Check the row order in template areas
+        $areas = $transformed->generateTemplateAreas();
+
+        // Expected order: aside (before header), header, nav+content row
+        self::assertStringContainsString('aside', $areas);
+        self::assertStringContainsString('header', $areas);
+        self::assertStringContainsString('nav', $areas);
+
+        // Verify order: aside should come before header
+        $asidePos = strpos($areas, 'aside');
+        $headerPos = strpos($areas, 'header');
+        self::assertLessThan($headerPos, $asidePos, 'Aside should appear before header (aside folds BEFORE header)');
     }
 
     #[Test]
